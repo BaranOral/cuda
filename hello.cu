@@ -1,4 +1,4 @@
-%%writefile hw1.cu
+// %%writefile hw1.cu for Google Colab
 
 
 #include <stdio.h>
@@ -21,6 +21,7 @@ void getInformationAboutSystem(){
    
         cudaDeviceProp deviceProp;
         cudaError_t err =  cudaGetDeviceProperties (&deviceProp, i);
+        
         if (!err) {
             printf("The device name: %s \n", deviceProp.name );
             printf("the maximum number of thread blocks: %d \n", deviceProp.maxBlocksPerMultiProcessor);
@@ -28,6 +29,7 @@ void getInformationAboutSystem(){
             }
     }
 }
+
 __host__ 
 float* generateRandomElements(int N, float constant){
 
@@ -40,7 +42,7 @@ float* generateRandomElements(int N, float constant){
 
     
     for (int i = 0; i<N; i++){
-          arr[i] = ((float)rand()/RAND_MAX)* constant;
+          arr[i] = ((float)rand()/RAND_MAX)* constant; //generate random float element for array
         //   printf("index %d: %f | ", i , arr[i]);
           
     }
@@ -62,7 +64,7 @@ int main(void)
     scanf("%f", &A);
     // printf("%f, %d", A, N);
     
-    // getInformationAboutSystem();
+    getInformationAboutSystem();
     
 
     float *x, *y, *d_x, *d_y;
@@ -81,7 +83,7 @@ int main(void)
     cudaMemcpy(d_x, x, N*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_y, y, N*sizeof(float), cudaMemcpyHostToDevice);
 
-    saxpy<<<N,1>>>(N, A, d_x, d_y);
+    saxpy<<<ceil(N/1024),1024>>>(N, A, d_x, d_y);
 
     cudaMemcpy(y, d_y, N*sizeof(float), cudaMemcpyDeviceToHost);
 
@@ -92,7 +94,7 @@ int main(void)
     // for (int i = 0; i < N; i++)
     //     printf("index %d: %f | ", i, y[i]);
 
-    printf("%lf is compile time", time_used);
+    printf("%lf is total compile time on GPU. \n", time_used);
     cudaFree(d_x);
     cudaFree(d_y);
     free(x);
