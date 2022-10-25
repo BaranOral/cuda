@@ -2,6 +2,7 @@
 
 
 #include <stdio.h>
+#include <time.h>
 
 __global__
 void saxpy(int n, float a, float *x, float *y)
@@ -22,8 +23,8 @@ void getInformationAboutSystem(){
         cudaError_t err =  cudaGetDeviceProperties (&deviceProp, i);
         if (!err) {
             printf("The device name: %s \n", deviceProp.name );
-            printf("the maximum number of thread blocks: %d \n", deviceProp.maxThreadsPerBlock);    
-            printf("the maximum number of threads per block at the beginning: %d \n", deviceProp.maxBlocksPerMultiProcessor);
+            printf("the maximum number of thread blocks: %d \n", deviceProp.maxBlocksPerMultiProcessor);
+            printf("the maximum number of threads per block at the beginning: %d \n", deviceProp.maxThreadsPerBlock);
             }
     }
 }
@@ -40,7 +41,7 @@ float* generateRandomElements(int N, float constant){
     
     for (int i = 0; i<N; i++){
           arr[i] = ((float)rand()/RAND_MAX)* constant;
-          printf("index %d: %f | ", i , arr[i]);
+        //   printf("index %d: %f | ", i , arr[i]);
           
     }
     return arr;
@@ -48,7 +49,9 @@ float* generateRandomElements(int N, float constant){
 
 int main(void)
 {
-    
+    clock_t start, end;
+    double time_used;
+
     int N;
     float A;
     printf("Enter a size for array: ");
@@ -64,14 +67,14 @@ int main(void)
 
     float *x, *y, *d_x, *d_y;
 
-    printf("X Vector is createad as: \n");
+    printf("X Vector is createad : \n");
     x = generateRandomElements(N, 1.0f);
     printf("\n--------------------------------------\n");
-    printf("Y Vector is createad as: \n");
+    printf("Y Vector is createad : \n");
     y = generateRandomElements(N, 2.0f);
     printf("\n--------------------------------------\n");
 
-    
+    start = clock();
     cudaMalloc(&d_x, N*sizeof(float)); 
     cudaMalloc(&d_y, N*sizeof(float));
 
@@ -82,11 +85,14 @@ int main(void)
 
     cudaMemcpy(y, d_y, N*sizeof(float), cudaMemcpyDeviceToHost);
 
-    // float maxError = 0.0f;
-    printf("After SAXPY Y Vector is like following\n");
-    for (int i = 0; i < N; i++)
-        printf("index %d: %f | ", i, y[i]);
+    end = clock();
+    time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
+    // printf("After SAXPY Y Vector is like following\n");
+    // for (int i = 0; i < N; i++)
+    //     printf("index %d: %f | ", i, y[i]);
+
+    printf("%lf is compile time", time_used);
     cudaFree(d_x);
     cudaFree(d_y);
     free(x);
